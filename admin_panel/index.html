@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم - تسجيل الدخول</title>
+    <!-- استخدام Pico.css لستايل سريع -->
+    <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <main class="container">
+        <article class="grid">
+            <div>
+                <hgroup>
+                    <h1>تسجيل دخول المسؤول</h1>
+                    <h2>إدارة حسابات العملاء والموردين</h2>
+                </hgroup>
+                <form id="login-form">
+                    <input type="email" id="email" name="email" placeholder="البريد الإلكتروني" aria-label="البريد الإلكتروني" autocomplete="email" required>
+                    <input type="password" id="password" name="password" placeholder="كلمة المرور" aria-label="كلمة المرور" autocomplete="current-password" required>
+                    <button type="submit" id="login-button" aria-busy="false">دخول</button>
+                </form>
+                <p id="error-message" style="color: var(--pico-color-red-600); display: none;"></p>
+            </div>
+            <div>
+                <!-- يمكنك وضع لوجو هنا -->
+                 <img src="data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjMDA1NzliIiB2ZXJzaW9uPSIxLjEiIGlkPSJMYXllcl8xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB2aWV3Qm94PSIwIDAgMzIgMzIiIGVuYWJsZS1iYWNrZ3JvdW5kPSJuZXcgMCAwIDMyIDMyIiB4bWw6c3BhY2U9InByZXNlcnZlIj4KPHBhdGggZD0iTTI4LjcsMTMuNEwyMyw3LjdjLTAuNC0wLjQtMS0wLjQtMS40LDBsLTUuNyw1LjdjLTAuNCwwLjQtMC40LDEsMCwxLjRsNS43LDUuN2MwLjQsMC40LDEsMC40LDEuNCwwbDQuMy00LjMgIGMwLjItMC4yLDAuMy0wLjNCwzLjUtMi40QzI5LjEsMTQuNCwyOS4xLDEzLjgsMjguNywxMy40eiBNMjYuOSwxNS4ybC0yLjgsMi44bC00LjMtNC4zbDIuOC0yLjhsNC4zLDQuM0MyNi45LDE1LjIsMjYuOSwxNS4yLDI2LjksMTUuMnoiLz4KPHBhdGggZD0iTTIwLjMsMTkuN2MtMC40LTAuNC0xLTAuNC0xLjQsMGwtNS43LDUuN2MtMC40LDAuNC0wLjQsMSwwLDEuNGw1LjcsNS43YzAuNCwwLjQsMSwwLjQsMS40LDBsNS43LTUuNyAgYzAuNC0wLjQsMC40LTEsMC0xLjRMMjAuMywxOS43eiBNMjEuNywyNS43bC0xLjQsMS40bC00LjMtNC4zbDEuNC0xLjRMMjEuNywyNS43eiIvPgo8cGF0aCBkPSJNMTEuNywxOS43Yy0wLjQtMC40LTEtMC40LTEuNCwwTDQuNiwxMy45Yy0wLjQsMC40LTAuNCwxLDAsMS40bDUuNyw1LjdjMC40LDAuNCwxLDAuNCwxLjQsMGw1LjctNS43ICBjMC40LTAuNCwwLjQtMSwwLTEuNEwxMS43LDE5Ljd6IE0xMy4xLDI1LjdMMTEuNywyNy4xbC00LjMtNC4zbDEuNC0xLjRMMTMuMSwyNS43eiIvPgo8cGF0aCBkPSJNMTEuNywyLjlDNi4zLDIuOSwyLDcuMywyLDExLjdjMCwzLjEsMS44LDUuOCw0LjQsNy4xbC0xLjIsMS4yYy0wLjIsMC4yLTAuMywwLjUtMC4zLDAuN2MwLDAuMiwwLjEsMC41LDAuMywwLjcgIGMwLjQsMC40LDEsMC40LDEuNCwwbDkuMy05LjNjMC40LTAuNCwwLjQtMSwwLTEuNEw3LjYsMy4xQzcuNCwyLjksNy4xLDIuOCw2LjksMi44Yy0wLjMsMC0wLjUsMC4xLTAuNywwLjJDNS44LDMuNCw1LjcsMy43LDUuNyw0ICBjMCwwLjIsMC4xLDAuNSwwLjMsMC43bDEuMiwxLjJDNy41LDUuNSw3LjgsNS40LDguMSw1LjNDOS41LDUuMSwxMC45LDUuNiwxMS43LDYuNGMwLjIsMC4yLDAuNSwwLjMsMC43LDAuMyAgYzAuMiwwLDAuNS0wLjEsMC43LTAuM0MxMy40LDYsMTMuNCw1LjUsMTMuMSw1LjJDOS43LDEuOCw0LjktMywzLjYsMy45QzMuNywyLjYsOCwzLjYsMTIuOCw0LjljMy4xLTEuNyw2LjctMS45LDkuOS0wLjYgIGMxLjgtMi4xLTMuMS00LjMtNi00LjNIMTIuOUMxMi40LDIuOSwxMi4xLDIuOSwxMS43LDIuOXoiLz4KPC9zdmc+" style="max-width: 150px; margin: 2rem auto; display: block;">
+            </div>
+        </article>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Ensure type=module for ES6 imports -->
+    <script type="module" src="js/supabase-client.js"></script>
+    <script type="module" src="js/auth.js"></script>
+</body>
+</html>

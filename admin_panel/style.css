@@ -1,0 +1,98 @@
+/* Make body direction RTL */
+body {
+    direction: rtl;
+    font-family: 'Tajawal', sans-serif; /* Example font */
+}
+
+/* Adjust container padding if needed */
+main.container {
+    padding-top: 1rem;
+    padding-bottom: 3rem;
+}
+
+/* Error message styling */
+.error-text {
+    color: var(--pico-color-red-600, #d32f2f);
+    margin-top: 0.5rem;
+    font-size: 0.9em;
+}
+
+/* Success message styling */
+.success-text {
+    color: var(--pico-color-green-600, #388e3c);
+    margin-top: 0.5rem;
+    font-size: 0.9em;
+}
+
+/* Style for action buttons in the table */
+td button.action-btn {
+    background: none;
+    border: none;
+    padding: 2px 5px; /* Smaller padding */
+    margin: 0 2px; /* Space between buttons */
+    cursor: pointer;
+    font-size: 1.1em; /* Adjust icon size */
+    line-height: 1;
+    vertical-align: middle;
+    border-radius: 4px; /* Slightly rounded corners */
+    transition: background-color 0.2s ease;
+}
+
+td button.action-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+button.approve-btn {
+    color: var(--pico-color-green-600, #388e3c);
+}
+button.approve-btn:hover:not(:disabled) {
+    background-color: var(--pico-color-green-100, #e8f5e9);
+}
+
+button.reject-btn {
+    color: var(--pico-color-red-600, #d32f2f);
+}
+button.reject-btn:hover:not(:disabled) {
+    background-color: var(--pico-color-red-100, #ffebee);
+}
+
+/* Ensure table is scrollable on small screens */
+.overflow-auto {
+    overflow-x: auto;
+    margin-bottom: 1rem; /* Add some space below the table */
+}
+
+/* Add some spacing for sections */
+section {
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    /* border-bottom: 1px solid var(--pico-table-border-color, #dcdcdc); */
+}
+
+/* Style the password reset form */
+#reset-password-form .grid {
+    grid-template-columns: 1fr auto; /* Email takes space, button fits content */
+    gap: var(--pico-form-element-spacing-horizontal);
+    align-items: end; /* Align items to the bottom */
+}
+ #reset-password-form label { margin-bottom: 0;} /* Remove bottom margin for label */
+
+
+/* Loading indicator centering */
+#loading-indicator {
+    text-align: center;
+    padding: 2rem;
+}
+#loading-indicator p {
+    margin-top: 0.5rem;
+    font-size: 0.9em;
+    color: grey;
+}
+
+ /* Message for no users */
+#no-pending-users-message, #no-all-users {
+    text-align: center;
+    padding: 1.5rem;
+    color: grey;
+}

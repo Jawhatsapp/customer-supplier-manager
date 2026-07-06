@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم - المستخدمون المعلقون</title>
+    <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="container-fluid">
+        <ul>
+            <li><a href="/dashboard.html" class="contrast"><strong>لوحة تحكم المسؤول</strong></a></li>
+        </ul>
+        <ul>
+            <li><a href="#" role="button" onclick="logout()">تسجيل الخروج</a></li>
+        </ul>
+    </nav>
+
+    <main class="container">
+        <section id="pending-users-section">
+            <h2><mark>المستخدمون بانتظار الموافقة</mark></h2>
+            <div id="loading-indicator">
+                <progress></progress>
+                <p>جاري تحميل المستخدمين...</p>
+            </div>
+            <p id="pending-error-message" class="error-text" style="display: none;"></p>
+            <div class="overflow-auto">
+                <table id="pending-users-table" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th scope="col">الاسم</th>
+                            <th scope="col">البريد</th>
+                            <th scope="col">الدور</th>
+                            <th scope="col">تاريخ التسجيل</th>
+                            <th scope="col">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody> <!-- Rows added by JS --> </tbody>
+                </table>
+            </div>
+            <p id="no-pending-users-message" style="display: none;">لا يوجد مستخدمون بانتظار الموافقة حالياً.</p>
+        </section>
+
+        <hr>
+
+        <section id="password-reset-section">
+             <h2><mark>إعادة تعيين كلمة المرور لمستخدم</mark></h2>
+             <form id="reset-password-form">
+                <div class="grid">
+                     <label for="reset-email">
+                         بريد المستخدم:
+                         <input type="email" id="reset-email" name="reset-email" placeholder="ادخل بريد المستخدم هنا" required>
+                     </label>
+                     <button type="submit" id="reset-password-button" aria-busy="false">إرسال رابط إعادة التعيين</button>
+                </div>
+             </form>
+             <p id="reset-status-message" style="margin-top: 10px;"></p>
+        </section>
+
+         <hr>
+          <!-- قسم اختياري: لعرض جميع المستخدمين (إذا كان هناك وقت) -->
+         
+         <section id="all-users-section">
+             <h2><mark>جميع المستخدمين</mark></h2>
+             <p> (قيد التطوير) </p>
+             <div id="all-users-loading">...</div>
+             <div id="all-users-error"></div>
+             <table id="all-users-table"> ... </table>
+             <p id="no-all-users"></p>
+         </section>
+        
+
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="module" src="js/supabase-client.js"></script>
+    <script type="module" src="js/auth.js"></script> <!-- Needed for checkAuth and logout -->
+    <script type="module" src="js/dashboard.js"></script>
+
+</body>
+</html>
