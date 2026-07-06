@@ -18,6 +18,20 @@
 
 ---
 
+### 🎨 تصاميم ومخططات الـ UI/UX (UI/UX Prototypes)
+
+> **ملاحظة:** يمكنك الاطلاع على التصاميم والنماذج الأولية للواجهات داخل مجلد `ui_ux_design`.
+
+| نموذج الواجهة 1 | نموذج الواجهة 2 | نموذج الواجهة 3 |
+|:---:|:---:|:---:|
+| <img src="ui_ux_design/design_1.png" width="200" /> | <img src="ui_ux_design/design_2.png" width="200" /> | <img src="ui_ux_design/design_3.png" width="200" /> |
+
+| نموذج الواجهة 4 | نموذج الواجهة 5 | نموذج الواجهة 6 |
+|:---:|:---:|:---:|
+| <img src="ui_ux_design/design_4.png" width="200" /> | <img src="ui_ux_design/design_5.png" width="200" /> | <img src="ui_ux_design/design_6.png" width="200" /> |
+
+---
+
 ## ✨ المميزات الرئيسية (Key Features)
 
 1. **نظام صلاحيات متعدد الأدوار (Multi-Role Authentication):**
