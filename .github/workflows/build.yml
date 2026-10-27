@@ -28,6 +28,18 @@ jobs:
           rm -rf android
           flutter create --platforms=android .
           sed -i '0,/<application/s##<uses-permission android:name="android.permission.INTERNET"/>\n    <application#' android/app/src/main/AndroidManifest.xml
+      - name: Force compileSdk for plugins
+        run: |
+          if [ -f android/build.gradle.kts ]; then
+            F=android/build.gradle.kts
+            printf '%s\n' 'subprojects { afterEvaluate { extensions.findByName("android")?.withGroovyBuilder { "compileSdkVersion"(36) } } }' > /tmp/hook
+          else
+            F=android/build.gradle
+            printf '%s\n' 'subprojects { afterEvaluate { p -> if (p.hasProperty("android")) { p.android { compileSdkVersion 36 } } } }' > /tmp/hook
+          fi
+          cat /tmp/hook "$F" > /tmp/new
+          cp /tmp/new "$F"
+          head -3 "$F"
       - name: Fix code for new Flutter
         run: |
           find lib -name '*.dart' -exec sed -i 's/CardTheme(/CardThemeData(/g; s/const ListToCsvConverter(/ListToCsvConverter(/g' {} +
