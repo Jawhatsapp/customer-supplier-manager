@@ -27,6 +27,7 @@ import '../returns/approve_return_requests_screen.dart';
 import '../manual_operations/approve_manual_operations_screen.dart';
 import '../manual_operations/sent_manual_operations_screen.dart';
 import '../reports/sales_report_screen.dart';
+import 'support_screen.dart';
 
 
 class AppDrawer extends StatelessWidget {
@@ -231,6 +232,12 @@ class AppDrawer extends StatelessWidget {
             //   onTap: () { ... navigate based on role ... } // يمكنك إبقاؤه أو دمجه
             // ),
           ],
+
+          // --- الدعم والمعلومات ---
+          const Divider(thickness: 0.6, height: 16),
+          _buildDrawerItem( context: context, icon: Icons.support_agent_outlined, title: 'الدعم والمعلومات', enabled: true,
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SupportScreen())),
+          ),
 
           // --- Logout ---
           const Divider(thickness: 0.6, height: 16),
