@@ -31,9 +31,11 @@ jobs:
       - name: Fix code for new Flutter
         run: |
           find lib -name '*.dart' -exec sed -i 's/CardTheme(/CardThemeData(/g; s/const ListToCsvConverter(/ListToCsvConverter(/g' {} +
-      - name: Pin csv package
-        run: flutter pub add csv:^6.0.0
-      - run: flutter pub get
+      - name: Fix packages
+        run: |
+          flutter pub add csv:^6.0.0
+          flutter pub add 'override:sign_in_with_apple:^6.1.0' || flutter pub add 'override:sign_in_with_apple:^7.0.1'
+          flutter pub upgrade --no-major-versions
       - run: flutter build apk --release --split-per-abi
       - uses: actions/upload-artifact@v4
         with:
