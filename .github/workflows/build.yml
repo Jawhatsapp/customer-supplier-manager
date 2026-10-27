@@ -35,7 +35,7 @@ jobs:
         run: |
           flutter pub add csv:^6.0.0
           flutter pub add 'override:sign_in_with_apple:^6.1.0' || flutter pub add 'override:sign_in_with_apple:^7.0.1'
-          flutter pub upgrade --no-major-versions
+          flutter pub upgrade
       - run: flutter build apk --release --split-per-abi
       - uses: actions/upload-artifact@v4
         with:
