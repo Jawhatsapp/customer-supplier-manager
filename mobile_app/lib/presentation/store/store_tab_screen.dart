@@ -61,7 +61,7 @@ class _StoreTabScreenState extends State<StoreTabScreen> {
       ),
       const FavoritesScreen(),
       StoreOrdersScreen(storeId: widget.storeId),
-      const StoreChatTab(),
+      StoreChatTab(storeId: widget.storeId),
     ];
   }
 
