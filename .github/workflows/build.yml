@@ -31,6 +31,8 @@ jobs:
       - name: Fix code for new Flutter
         run: |
           find lib -name '*.dart' -exec sed -i 's/CardTheme(/CardThemeData(/g; s/const ListToCsvConverter(/ListToCsvConverter(/g' {} +
+      - name: Pin csv package
+        run: flutter pub add csv:^6.0.0
       - run: flutter pub get
       - run: flutter build apk --release --split-per-abi
       - uses: actions/upload-artifact@v4
