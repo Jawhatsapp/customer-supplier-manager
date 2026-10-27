@@ -23,8 +23,11 @@ jobs:
           URL: ${{ secrets.SUPABASE_URL }}
           KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: printf 'SUPABASE_URL=%s\nSUPABASE_ANON_KEY=%s\n' "$URL" "$KEY" > .env
-      - name: Ensure android folder
-        run: '[ -d android ] || flutter create --platforms=android .'
+      - name: Recreate android folder
+        run: |
+          rm -rf android
+          flutter create --platforms=android .
+          sed -i '0,/<application/s##<uses-permission android:name="android.permission.INTERNET"/>\n    <application#' android/app/src/main/AndroidManifest.xml
       - run: flutter pub get
       - run: flutter build apk --release --split-per-abi
       - uses: actions/upload-artifact@v4
