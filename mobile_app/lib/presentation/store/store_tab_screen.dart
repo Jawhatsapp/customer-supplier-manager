@@ -103,6 +103,7 @@ class _StoreTabScreenState extends State<StoreTabScreen> {
   // ... (باقي الدوال _onItemTapped, _buildFloatingActionButton, _fetchUnreadNotificationsCount تبقى كما هي)
   void _onItemTapped(int index) {
     if (!mounted) return;
+    chatTabVisible.value = (index == 3); // <-- جديد: هل تبويب الدردشة ظاهر؟
     setState(() { _selectedIndex = index; });
   }
 
@@ -259,11 +260,11 @@ class _StoreTabScreenState extends State<StoreTabScreen> {
         type: BottomNavigationBarType.fixed,
         selectedItemColor: theme.colorScheme.primary,
         unselectedItemColor: Colors.grey[600],
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.store_outlined), label: 'المنتجات'),
-          BottomNavigationBarItem(icon: Icon(Icons.favorite_border), label: 'المفضلة'),
-          BottomNavigationBarItem(icon: Icon(Icons.receipt_long_outlined), label: 'الطلبات'),
-          BottomNavigationBarItem(icon: Icon(Icons.chat_bubble_outline), label: 'الدردشة'),
+        items: [
+          const BottomNavigationBarItem(icon: Icon(Icons.store_outlined), label: 'المنتجات'),
+          const BottomNavigationBarItem(icon: Icon(Icons.favorite_border), label: 'المفضلة'),
+          const BottomNavigationBarItem(icon: Icon(Icons.receipt_long_outlined), label: 'الطلبات'),
+          BottomNavigationBarItem(icon: ChatTabIcon(storeId: widget.storeId), label: 'الدردشة'),
         ],
       ),
       floatingActionButton: _buildFloatingActionButton(),
