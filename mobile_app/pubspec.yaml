@@ -52,6 +52,7 @@ dependencies:
   path:
   timeago:
   url_launcher: ^6.2.0
+  shorebird_code_push: ^2.0.0 # نافذة التحديث المباشر
 
 dev_dependencies:
   flutter_test:
