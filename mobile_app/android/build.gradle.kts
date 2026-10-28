@@ -1,3 +1,4 @@
+subprojects { afterEvaluate { extensions.findByName("android")?.withGroovyBuilder { "compileSdkVersion"(36) } } }
 allprojects {
     repositories {
         google()
