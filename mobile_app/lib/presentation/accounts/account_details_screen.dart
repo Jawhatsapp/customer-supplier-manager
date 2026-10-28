@@ -250,7 +250,7 @@ class _AccountDetailScreenState extends State<AccountDetailScreen> {
 
 
             // تحويل البيانات إلى CSV (مع التأكد من ترميز UTF-8 للعربية)
-            String csvData = const ListToCsvConverter().convert(rows);
+            String csvData = ListToCsvConverter().convert(rows);
 
             // حفظ الملف مؤقتًا
             final directory = await getTemporaryDirectory();

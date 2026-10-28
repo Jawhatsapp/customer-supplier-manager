@@ -40,7 +40,7 @@ dependencies:
   path_provider: ^2.1.1 # Or latest version
   share_plus: ^7.1.0 # Or latest version
   flutter_svg:
-  csv:
+  csv: ^6.0.0
   shared_preferences: ^2.2.3 # <--- لحفظ حالة المشاهدة
   smooth_page_indicator: ^1.1.0 # <--- لمؤشرات الصفحات الجميلة (اختياري ولكن موصى به)
   supabase_flutter: ^1.0.0
@@ -70,9 +70,10 @@ flutter:
   uses-material-design: true
 
   assets:
-     - assets/illustrations/
-     - assets/icon/
-     - .env
+    - assets/illustrations/
+    - assets/icon/
+    - .env
+    - shorebird.yaml
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
@@ -98,3 +99,5 @@ flutter_launcher_icons:
   ios: true # تفعيل لـ iOS
   remove_alpha_ios: true # إزالة الشفافية لأيقونة iOS (موصى به)
   image_path: "assets/icon/app_icon.png" # <--- مسار صورة الأيقونة الرئيسية
+dependency_overrides:
+  sign_in_with_apple: ^6.1.0

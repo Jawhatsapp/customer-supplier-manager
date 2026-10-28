@@ -98,7 +98,7 @@ class MyApp extends StatelessWidget {
           elevation: 1, centerTitle: true,
           titleTextStyle: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold, color: Colors.white, fontFamily: 'Tajawal'),
         ),
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           elevation: 2, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
           margin: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 10.0), color: Colors.white,
         ),
