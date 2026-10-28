@@ -60,11 +60,20 @@ jobs:
           rm -rf android
           flutter create --platforms=android .
           sed -i '0,/<application/s##<uses-permission android:name="android.permission.INTERNET"/>\n    <application#' android/app/src/main/AndroidManifest.xml
+          if [ -f android/build.gradle.kts ]; then
+            F=android/build.gradle.kts
+            printf '%s\n' 'subprojects { afterEvaluate { extensions.findByName("android")?.withGroovyBuilder { "compileSdkVersion"(36) } } }' > /tmp/hook
+          else
+            F=android/build.gradle
+            printf '%s\n' 'subprojects { afterEvaluate { p -> if (p.hasProperty("android")) { p.android { compileSdkVersion 36 } } } }' > /tmp/hook
+          fi
+          cat /tmp/hook "$F" > /tmp/new
+          cp /tmp/new "$F"
           find lib -name '*.dart' -exec sed -i 's/CardTheme(/CardThemeData(/g; s/const ListToCsvConverter(/ListToCsvConverter(/g' {} +
           flutter pub add csv:^6.0.0
           flutter pub add 'override:sign_in_with_apple:^6.1.0' || flutter pub add 'override:sign_in_with_apple:^7.0.1'
           flutter pub upgrade
-          shorebird init
+          [ -f shorebird.yaml ] || shorebird init
 
       - name: Commit prepared project
         if: ${{ inputs.action == 'setup' }}
