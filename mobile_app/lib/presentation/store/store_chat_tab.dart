@@ -1,10 +1,77 @@
 // lib/presentation/store/store_chat_tab.dart
+import 'package:badges/badges.dart' as badges;
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// تبويب الدردشة داخل المتجر:
-/// - العميل: يفتح محادثته مع المتجر مباشرة.
-/// - صاحب المتجر: يرى قائمة العملاء الذين راسلوه ويفتح أي محادثة.
+/// يخبر الدردشة هل تبويبها ظاهر الآن (حتى لا تُعلَّم الرسائل كمقروءة وهي مخفية)
+final ValueNotifier<bool> chatTabVisible = ValueNotifier<bool>(false);
+
+bool _isUnread(Map<String, dynamic> m, String me) =>
+    m['sender_id'] != me && m['read_at'] == null && m['deleted'] != true;
+
+String _hhmm(dynamic iso) {
+  if (iso == null) return '';
+  final d = DateTime.tryParse(iso.toString())?.toLocal();
+  if (d == null) return '';
+  return '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
+}
+
+// ---------------------------------------------------------------------
+// أيقونة التبويب مع عدّاد الرسائل غير المقروءة
+// ---------------------------------------------------------------------
+class ChatTabIcon extends StatefulWidget {
+  final int storeId;
+  const ChatTabIcon({Key? key, required this.storeId}) : super(key: key);
+
+  @override
+  State<ChatTabIcon> createState() => _ChatTabIconState();
+}
+
+class _ChatTabIconState extends State<ChatTabIcon> {
+  Stream<List<Map<String, dynamic>>>? _stream;
+
+  @override
+  void initState() {
+    super.initState();
+    if (Supabase.instance.client.auth.currentUser != null) {
+      _stream = Supabase.instance.client
+          .from('chat_messages')
+          .stream(primaryKey: ['id'])
+          .eq('store_id', widget.storeId)
+          .order('created_at', ascending: false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final me = Supabase.instance.client.auth.currentUser?.id;
+    if (_stream == null || me == null) {
+      return const Icon(Icons.chat_bubble_outline);
+    }
+    return StreamBuilder<List<Map<String, dynamic>>>(
+      stream: _stream,
+      builder: (context, snap) {
+        final n = (snap.data ?? const <Map<String, dynamic>>[])
+            .where((m) => _isUnread(m, me))
+            .length;
+        return badges.Badge(
+          position: badges.BadgePosition.topEnd(top: -8, end: -8),
+          showBadge: n > 0,
+          badgeContent: Text(
+            n > 99 ? '99+' : '$n',
+            style: const TextStyle(color: Colors.white, fontSize: 10),
+          ),
+          child: const Icon(Icons.chat_bubble_outline),
+        );
+      },
+    );
+  }
+}
+
+// ---------------------------------------------------------------------
+// تبويب الدردشة داخل المتجر
+// ---------------------------------------------------------------------
 class StoreChatTab extends StatefulWidget {
   final int storeId;
   const StoreChatTab({Key? key, required this.storeId}) : super(key: key);
@@ -20,6 +87,12 @@ class _StoreChatTabState extends State<StoreChatTab> {
   void initState() {
     super.initState();
     _ownerFuture = _loadOwner();
+  }
+
+  @override
+  void dispose() {
+    chatTabVisible.value = false;
+    super.dispose();
   }
 
   Future<String?> _loadOwner() async {
@@ -73,6 +146,8 @@ class _OwnerConversationsState extends State<_OwnerConversations> {
   final Map<String, String> _names = {};
   final Set<String> _requested = {};
 
+  String get _me => _client.auth.currentUser!.id;
+
   @override
   void initState() {
     super.initState();
@@ -103,6 +178,13 @@ class _OwnerConversationsState extends State<_OwnerConversations> {
     }).catchError((_) {});
   }
 
+  String _preview(Map<String, dynamic> m) {
+    if (m['deleted'] == true) return 'تم حذف الرسالة';
+    final body = (m['body'] ?? '') as String;
+    if (body.isEmpty && m['image_url'] != null) return '📷 صورة';
+    return body;
+  }
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<List<Map<String, dynamic>>>(
@@ -114,10 +196,12 @@ class _OwnerConversationsState extends State<_OwnerConversations> {
         if (!snap.hasData) {
           return const Center(child: CircularProgressIndicator());
         }
-        // أحدث رسالة لكل عميل (القائمة مرتبة من الأحدث)
         final latest = <String, Map<String, dynamic>>{};
+        final unread = <String, int>{};
         for (final m in snap.data!) {
-          latest.putIfAbsent(m['customer_id'] as String, () => m);
+          final cid = m['customer_id'] as String;
+          latest.putIfAbsent(cid, () => m);
+          if (_isUnread(m, _me)) unread[cid] = (unread[cid] ?? 0) + 1;
         }
         if (latest.isEmpty) {
           return const Center(
@@ -139,19 +223,45 @@ class _OwnerConversationsState extends State<_OwnerConversations> {
             final cid = ids[i];
             final msg = latest[cid]!;
             final name = (_names[cid] ?? '').isEmpty ? 'عميل' : _names[cid]!;
+            final n = unread[cid] ?? 0;
             return ListTile(
-              leading: CircleAvatar(
-                child: Text(name.substring(0, 1)),
+              leading: CircleAvatar(child: Text(name.substring(0, 1))),
+              title: Text(
+                name,
+                style: TextStyle(
+                    fontWeight: n > 0 ? FontWeight.bold : FontWeight.normal),
               ),
-              title: Text(name),
               subtitle: Text(
-                (msg['body'] ?? '') as String,
+                _preview(msg),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                    fontWeight: n > 0 ? FontWeight.w600 : FontWeight.normal),
               ),
-              trailing: Text(
-                _hhmm(msg['created_at']),
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
+              trailing: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    _hhmm(msg['created_at']),
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                  if (n > 0)
+                    Container(
+                      margin: const EdgeInsets.only(top: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 7, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primary,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        n > 99 ? '99+' : '$n',
+                        style:
+                            const TextStyle(color: Colors.white, fontSize: 11),
+                      ),
+                    ),
+                ],
               ),
               onTap: () {
                 Navigator.push(
@@ -160,7 +270,10 @@ class _OwnerConversationsState extends State<_OwnerConversations> {
                     builder: (_) => Scaffold(
                       appBar: AppBar(title: Text(name)),
                       body: ChatThread(
-                          storeId: widget.storeId, customerId: cid),
+                        storeId: widget.storeId,
+                        customerId: cid,
+                        alwaysActive: true,
+                      ),
                     ),
                   ),
                 );
@@ -174,13 +287,18 @@ class _OwnerConversationsState extends State<_OwnerConversations> {
 }
 
 // ---------------------------------------------------------------------
-// شاشة المحادثة (رسائل لحظية)
+// شاشة المحادثة
 // ---------------------------------------------------------------------
 class ChatThread extends StatefulWidget {
   final int storeId;
   final String customerId;
-  const ChatThread({Key? key, required this.storeId, required this.customerId})
-      : super(key: key);
+  final bool alwaysActive;
+  const ChatThread({
+    Key? key,
+    required this.storeId,
+    required this.customerId,
+    this.alwaysActive = false,
+  }) : super(key: key);
 
   @override
   State<ChatThread> createState() => _ChatThreadState();
@@ -190,9 +308,12 @@ class _ChatThreadState extends State<ChatThread> {
   final _client = Supabase.instance.client;
   final _ctrl = TextEditingController();
   late final Stream<List<Map<String, dynamic>>> _stream;
+  final Set<int> _marked = {};
+  List<Map<String, dynamic>> _latest = [];
   bool _sending = false;
 
   String get _me => _client.auth.currentUser!.id;
+  bool get _active => widget.alwaysActive || chatTabVisible.value;
 
   @override
   void initState() {
@@ -202,12 +323,39 @@ class _ChatThreadState extends State<ChatThread> {
         .stream(primaryKey: ['id'])
         .eq('customer_id', widget.customerId)
         .order('created_at', ascending: false);
+    chatTabVisible.addListener(_maybeMarkRead);
   }
 
   @override
   void dispose() {
+    chatTabVisible.removeListener(_maybeMarkRead);
     _ctrl.dispose();
     super.dispose();
+  }
+
+  // تعليم رسائل الطرف الآخر كمقروءة (فقط والمحادثة ظاهرة أمامك)
+  void _maybeMarkRead() {
+    if (!mounted || !_active) return;
+    final ids = <int>[];
+    for (final m in _latest) {
+      final id = (m['id'] as num).toInt();
+      if (_isUnread(m, _me) && !_marked.contains(id)) ids.add(id);
+    }
+    if (ids.isEmpty) return;
+    _marked.addAll(ids);
+    _client
+        .from('chat_messages')
+        .update({'read_at': DateTime.now().toUtc().toIso8601String()})
+        .in_('id', ids)
+        .then((_) {})
+        .catchError((_) {
+      _marked.removeAll(ids);
+    });
+  }
+
+  void _toast(String msg) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
   Future<void> _send() async {
@@ -223,14 +371,118 @@ class _ChatThreadState extends State<ChatThread> {
       });
       _ctrl.clear();
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('تعذر إرسال الرسالة، حاول مرة أخرى.')),
-        );
-      }
+      _toast('تعذر إرسال الرسالة، حاول مرة أخرى.');
     } finally {
       if (mounted) setState(() => _sending = false);
     }
+  }
+
+  Future<void> _sendImage() async {
+    if (_sending) return;
+    try {
+      final picked = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 70,
+        maxWidth: 1280,
+      );
+      if (picked == null) return;
+      setState(() => _sending = true);
+      final bytes = await picked.readAsBytes();
+      final path =
+          '${widget.storeId}/${widget.customerId}/${DateTime.now().millisecondsSinceEpoch}.jpg';
+      await _client.storage.from('chat-images').uploadBinary(
+            path,
+            bytes,
+            fileOptions: const FileOptions(cacheControl: '3600', upsert: false),
+          );
+      final url = _client.storage.from('chat-images').getPublicUrl(path);
+      await _client.from('chat_messages').insert({
+        'store_id': widget.storeId,
+        'customer_id': widget.customerId,
+        'sender_id': _me,
+        'body': '',
+        'image_url': url,
+      });
+    } catch (e) {
+      _toast('تعذر إرسال الصورة، حاول مرة أخرى.');
+    } finally {
+      if (mounted) setState(() => _sending = false);
+    }
+  }
+
+  void _confirmDelete(Map<String, dynamic> m) {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: ListTile(
+          leading: const Icon(Icons.delete_outline, color: Colors.red),
+          title: const Text('حذف الرسالة'),
+          onTap: () async {
+            Navigator.pop(ctx);
+            try {
+              await _client
+                  .from('chat_messages')
+                  .update({'deleted': true}).eq('id', m['id']);
+            } catch (e) {
+              _toast('تعذر حذف الرسالة.');
+            }
+          },
+        ),
+      ),
+    );
+  }
+
+  void _openImage(String url) {
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        insetPadding: const EdgeInsets.all(12),
+        child: InteractiveViewer(child: Image.network(url)),
+      ),
+    );
+  }
+
+  Widget _content(Map<String, dynamic> m, bool mine) {
+    final textColor = mine ? Colors.white : Colors.black87;
+    if (m['deleted'] == true) {
+      return Text(
+        '🚫 تم حذف هذه الرسالة',
+        style: TextStyle(
+            color: textColor.withAlpha(180),
+            fontStyle: FontStyle.italic,
+            fontSize: 14),
+      );
+    }
+    final String img = (m['image_url'] as String?) ?? '';
+    final bool hasImg = img.isNotEmpty;
+    final body = (m['body'] ?? '') as String;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (hasImg)
+          GestureDetector(
+            onTap: () => _openImage(img),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.network(
+                img,
+                width: 220,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => const SizedBox(
+                  width: 220,
+                  height: 80,
+                  child: Center(child: Icon(Icons.broken_image)),
+                ),
+              ),
+            ),
+          ),
+        if (body.isNotEmpty)
+          Padding(
+            padding: EdgeInsets.only(top: hasImg ? 6 : 0),
+            child: Text(body, style: TextStyle(color: textColor, fontSize: 15)),
+          ),
+      ],
+    );
   }
 
   @override
@@ -248,10 +500,12 @@ class _ChatThreadState extends State<ChatThread> {
               if (!snap.hasData) {
                 return const Center(child: CircularProgressIndicator());
               }
-              // رسائل هذا المتجر فقط، الأحدث أولاً (القائمة معكوسة لتبقى على آخر رسالة)
               final msgs = snap.data!
                   .where((m) => m['store_id'] == widget.storeId)
                   .toList();
+              _latest = msgs;
+              WidgetsBinding.instance
+                  .addPostFrameCallback((_) => _maybeMarkRead());
               if (msgs.isEmpty) {
                 return const Center(child: Text('ابدأ المحادثة بإرسال رسالة 👋'));
               }
@@ -262,40 +516,57 @@ class _ChatThreadState extends State<ChatThread> {
                 itemBuilder: (context, i) {
                   final m = msgs[i];
                   final mine = m['sender_id'] == _me;
+                  final deleted = m['deleted'] == true;
+                  final read = m['read_at'] != null;
                   return Align(
                     alignment: mine
                         ? AlignmentDirectional.centerStart
                         : AlignmentDirectional.centerEnd,
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(vertical: 3),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 8),
-                      constraints: BoxConstraints(
-                          maxWidth: MediaQuery.of(context).size.width * 0.75),
-                      decoration: BoxDecoration(
-                        color: mine
-                            ? theme.colorScheme.primary
-                            : Colors.grey.shade300,
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            (m['body'] ?? '') as String,
-                            style: TextStyle(
-                                color: mine ? Colors.white : Colors.black87,
-                                fontSize: 15),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            _hhmm(m['created_at']),
-                            style: TextStyle(
-                                fontSize: 10,
-                                color:
-                                    mine ? Colors.white70 : Colors.black45),
-                          ),
-                        ],
+                    child: GestureDetector(
+                      onLongPress:
+                          (mine && !deleted) ? () => _confirmDelete(m) : null,
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(vertical: 3),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
+                        constraints: BoxConstraints(
+                            maxWidth:
+                                MediaQuery.of(context).size.width * 0.75),
+                        decoration: BoxDecoration(
+                          color: mine
+                              ? theme.colorScheme.primary
+                              : Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _content(m, mine),
+                            const SizedBox(height: 2),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  _hhmm(m['created_at']),
+                                  style: TextStyle(
+                                      fontSize: 10,
+                                      color: mine
+                                          ? Colors.white70
+                                          : Colors.black45),
+                                ),
+                                if (mine && !deleted)
+                                  Text(
+                                    read ? '  ✓✓' : '  ✓',
+                                    style: TextStyle(
+                                        fontSize: 10,
+                                        color: read
+                                            ? Colors.lightBlueAccent
+                                            : Colors.white70),
+                                  ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   );
@@ -309,9 +580,14 @@ class _ChatThreadState extends State<ChatThread> {
           child: SafeArea(
             top: false,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(8, 6, 8, 6),
+              padding: const EdgeInsets.fromLTRB(4, 6, 4, 6),
               child: Row(
                 children: [
+                  IconButton(
+                    onPressed: _sending ? null : _sendImage,
+                    icon: Icon(Icons.image_outlined,
+                        color: theme.colorScheme.primary),
+                  ),
                   Expanded(
                     child: TextField(
                       controller: _ctrl,
@@ -330,7 +606,7 @@ class _ChatThreadState extends State<ChatThread> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 6),
+                  const SizedBox(width: 4),
                   IconButton(
                     onPressed: _sending ? null : _send,
                     icon: _sending
@@ -348,11 +624,4 @@ class _ChatThreadState extends State<ChatThread> {
       ],
     );
   }
-}
-
-String _hhmm(dynamic iso) {
-  if (iso == null) return '';
-  final d = DateTime.tryParse(iso.toString())?.toLocal();
-  if (d == null) return '';
-  return '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
 }
