@@ -238,7 +238,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   Icon( Icons.storefront_outlined, size: 85, color: theme.colorScheme.primary),
                   const SizedBox(height: 24),
-                  Text('مرحباً بعودتك!', textAlign: TextAlign.center, style: theme.textTheme.headlineSmall?.copyWith(color: theme.colorScheme.primary, fontWeight: FontWeight.bold)),
+                  Text('مرحباً بعودتك! 👋', textAlign: TextAlign.center, style: theme.textTheme.headlineSmall?.copyWith(color: theme.colorScheme.primary, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
                   Text('سجّل الدخول للمتابعة', textAlign: TextAlign.center, style: theme.textTheme.titleMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
                   const SizedBox(height: 35),
