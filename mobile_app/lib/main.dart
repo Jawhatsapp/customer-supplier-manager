@@ -20,6 +20,10 @@ import 'presentation/home/supplier_home_screen.dart'; // تأكد من وجود 
 import 'presentation/splash_screen.dart';
 import 'presentation/auth/pending_approval_screen.dart';
 import 'presentation/auth/verify_email_screen.dart';
+import 'presentation/widgets/update_gate.dart'; // نافذة التحديث
+
+// مفتاح الملاحة (تستخدمه نافذة التحديث)
+final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
 
 
 Future<void> main() async {
@@ -115,7 +119,11 @@ class MyApp extends StatelessWidget {
       title: 'إدارة الحسابات',
       debugShowCheckedModeBanner: false,
       theme: myAppTheme,
-      builder: (context, child) => Directionality(textDirection: TextDirection.rtl, child: child!),
+      navigatorKey: appNavigatorKey,
+      builder: (context, child) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: UpdateGate(navigatorKey: appNavigatorKey, child: child!),
+      ),
       initialRoute: '/initial',
       routes: {
         '/initial': (context) => const InitialScreen(),
